@@ -68,8 +68,8 @@ HYPERLINK_SPECS = {
     "NSE Chart": (
         "https://www.nseindia.com/get-quotes/equity?symbol=",
         "",
-        "🟢",
-        False,
+        "n",
+        True,
     ),  # Static display
     "Trading View": (
         "https://www.tradingview.com/symbols/",
