@@ -48,6 +48,11 @@ def load_and_combine(files):
         return None, pd.DataFrame()
 
     combined = pd.concat(all_frames, ignore_index=True, sort=False)
+
+    # Drop columns that shouldn't appear in the final combined output
+    columns_to_drop = ["Source File", "Source Sheet", "Date"]
+    combined = combined.drop(columns=[c for c in columns_to_drop if c in combined.columns])
+
     return combined, pd.DataFrame(file_summary)
 
 
