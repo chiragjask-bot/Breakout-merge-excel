@@ -53,6 +53,9 @@ def load_and_combine(files):
     columns_to_drop = ["Source File", "Source Sheet", "Date"]
     combined = combined.drop(columns=[c for c in columns_to_drop if c in combined.columns])
 
+    # Rename columns for the final output
+    combined = combined.rename(columns={"Stock": "Symbol"})
+
     return combined, pd.DataFrame(file_summary)
 
 
@@ -60,10 +63,10 @@ def to_excel_bytes(df: pd.DataFrame) -> bytes:
     """Convert a DataFrame to an in-memory Excel file (single combined tab)."""
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name="Combined")
+        df.to_excel(writer, index=False, sheet_name="Final List")
 
         # Auto-fit column widths for readability
-        worksheet = writer.sheets["Combined"]
+        worksheet = writer.sheets["Final List"]
         for i, col in enumerate(df.columns, start=1):
             max_len = max(
                 df[col].astype(str).map(len).max() if len(df) else 0, len(str(col))
