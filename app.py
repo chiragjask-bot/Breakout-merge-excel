@@ -386,7 +386,12 @@ def to_excel_bytes(df: pd.DataFrame, passthrough_sheets=None) -> bytes:
 
 
 if uploaded_files:
-    combined_df, summary_df = load_and_combine(uploaded_files)
+    expanded_files = expand_uploads(uploaded_files)
+    breakout_files, passthrough_sheets = split_breakout_and_passthrough(expanded_files)
+
+    combined_df, summary_df = (None, pd.DataFrame())
+    if breakout_files:
+        combined_df, summary_df = load_and_combine(breakout_files)
 
     if combined_df is not None:
         original_count = len(combined_df)
@@ -399,17 +404,24 @@ if uploaded_files:
             combined_df = combined_df.drop_duplicates(subset=data_cols, keep="first")
 
         st.success(
-            f"Merged {len(uploaded_files)} file(s) → {len(summary_df)} sheet(s) → "
-            f"{original_count} rows read, {len(combined_df)} rows in final combined tab."
+            f"Merged {len(breakout_files)} breakout file(s) → {len(summary_df)} sheet(s) → "
+            f"{original_count} rows read, {len(combined_df)} rows in final 'Final List' tab."
         )
 
         with st.expander("📄 File / Sheet summary"):
             st.dataframe(summary_df, use_container_width=True)
 
-        st.subheader("Combined Data Preview")
+        st.subheader("Final List Preview")
         st.dataframe(combined_df, use_container_width=True)
 
-        excel_bytes = to_excel_bytes(combined_df)
+    if passthrough_sheets:
+        st.success(
+            f"Added {len(passthrough_sheets)} pass-through tab(s) unchanged: "
+            + ", ".join(name for name, _ in passthrough_sheets)
+        )
+
+    if combined_df is not None or passthrough_sheets:
+        excel_bytes = to_excel_bytes(combined_df, passthrough_sheets)
         today_str = datetime.now().strftime("%Y-%m-%d")
 
         st.download_button(
@@ -418,5 +430,7 @@ if uploaded_files:
             file_name=f"Breakout_List_Combined_{today_str}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+    else:
+        st.warning("No readable data found in the uploaded file(s).")
 else:
     st.info("👆 Upload one or more Excel files to get started.")
