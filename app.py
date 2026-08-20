@@ -111,7 +111,7 @@ if not check_login():
 st.title("📊 Breakout List — Merge All Sheets Into One")
 st.write(
     "Upload all your Breakout List Excel files (Sheet-1 to Sheet-7, or any number of files). "
-    "The app will combine every sheet from every file into a single merged 'Final List' tab, "
+    "The app will combine every sheet from every file into a single merged 'Top 250 Stocks' tab, "
     "remove duplicate rows, and let you download the final combined file. "
     "You can also upload .zip files (e.g. a zipped 'Cumulative Average2' workbook) — "
     "any recognized pass-through sheet inside is added as its own extra tab, completely unchanged."
@@ -129,7 +129,7 @@ drop_duplicates = st.checkbox("Remove duplicate rows (exact matches)", value=Tru
 
 
 # Sheet names that should be added to the final workbook as their OWN extra tab,
-# copied exactly as-is (values/formulas unchanged) — NOT merged into "Final List".
+# copied exactly as-is (values/formulas unchanged) — NOT merged into "Top 250 Stocks".
 # Add more names here if other pass-through workbooks come up in future.
 PASSTHROUGH_SHEET_NAMES = {"Cumulative Average2"}
 
@@ -271,8 +271,8 @@ HYPERLINK_SPECS = {
     "NSE Chart": (
         "https://www.nseindia.com/get-quotes/equity?symbol=",
         "",
-        "🟢",
-        False,
+        "n ",
+        True,
     ),  # Static display
     "Trading View": (
         "https://www.tradingview.com/symbols/",
@@ -314,16 +314,16 @@ HYPERLINK_SPECS = {
 
 
 def to_excel_bytes(df: pd.DataFrame, passthrough_sheets=None) -> bytes:
-    """Convert a DataFrame to an in-memory Excel file (a 'Final List' tab),
+    """Convert a DataFrame to an in-memory Excel file (a 'Top 250 Stocks' tab),
     with live HYPERLINK formulas added per row for each configured site.
     Any (sheet_name, worksheet) pairs in passthrough_sheets are appended as
     additional tabs, copied exactly as-is with no changes."""
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         if df is not None and len(df) > 0:
-            df.to_excel(writer, index=False, sheet_name="Final List")
+            df.to_excel(writer, index=False, sheet_name="Top 250 Stocks")
 
-            worksheet = writer.sheets["Final List"]
+            worksheet = writer.sheets["Top 250 Stocks"]
             headers = list(df.columns)
 
             # Auto-fit original column widths for readability
@@ -405,13 +405,13 @@ if uploaded_files:
 
         st.success(
             f"Merged {len(breakout_files)} breakout file(s) → {len(summary_df)} sheet(s) → "
-            f"{original_count} rows read, {len(combined_df)} rows in final 'Final List' tab."
+            f"{original_count} rows read, {len(combined_df)} rows in final 'Top 250 Stocks' tab."
         )
 
         with st.expander("📄 File / Sheet summary"):
             st.dataframe(summary_df, use_container_width=True)
 
-        st.subheader("Final List Preview")
+        st.subheader("Top 250 Stocks Preview")
         st.dataframe(combined_df, use_container_width=True)
 
     if passthrough_sheets:
